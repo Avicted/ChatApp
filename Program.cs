@@ -41,7 +41,11 @@ app.MapGet("/api/ws", async (HttpContext context) =>
 
 app.MapGet("/api/chatrooms", () =>
 {
-
+    using (var scope = app.Services.CreateScope())
+    {
+        var websocketService = scope.ServiceProvider.GetRequiredService<WebSocketService>();
+        return websocketService.websocketConnections.ToList();
+    }
 });
 
 
