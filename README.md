@@ -16,3 +16,6 @@ websocat ws://127.0.0.1:8000/api/ws
 # Commands:
 set username <username>
 ```
+
+Swagger at:
+http://localhost:8000/swagger/index.html
