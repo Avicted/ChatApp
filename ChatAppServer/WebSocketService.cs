@@ -49,17 +49,30 @@ public class WebSocketService
 
         while (webSocket.State == WebSocketState.Open)
         {
-            var message = await ReceiveMessage(id, newClient);
-            if (message != null)
-                await SendMessageToSockets(message, null);
+            try
+            {
+                var message = await ReceiveMessage(id, newClient);
+                if (message != null)
+                    await SendMessageToSockets(message, null);
+            }
+            catch (WebSocketException e)
+            {
+                lock (websocketConnections)
+                {
+                    websocketConnections.Remove(newClient);
+                }
+
+                lock (chatRooms)
+                {
+                    chatRooms[0].Clients.Remove(newClient);
+                }
+
+                throw new ApiRemotePartyClosedConnectionException();
+            }
 
         }
 
-        await webSocket.CloseOutputAsync(
-            WebSocketCloseStatus.NormalClosure,
-            "closing websocket",
-            CancellationToken.None
-        );
+        webSocket.Dispose();
     }
 
     public async Task<string> ReceiveMessage(Guid id, ChatClient chatClient)
@@ -69,6 +82,13 @@ public class WebSocketService
         try
         {
             var receivedMessage = await chatClient.WebSocket.ReceiveAsync(arraySegment, CancellationToken.None);
+
+
+            if (receivedMessage == null)
+            {
+                return "";
+            }
+
             if (receivedMessage.MessageType == WebSocketMessageType.Text)
             {
                 var message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
@@ -80,7 +100,6 @@ public class WebSocketService
                 if (tokens.Length == 3)
                 {
                     // Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
-
 
                     if (tokens[0] == "set")
                     {
@@ -105,10 +124,16 @@ public class WebSocketService
                     return $"{DateTime.Now}:[{username}]: {message}";
             }
             return "";
+
         }
-        catch (WebSocketException e)
+        catch (WebSocketException webSocketException)
         {
-            throw new ApiRemotePartyClosedConnectionException();
+            if (webSocketException.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+            {
+                // Custom logic
+            }
+
+            return "";
         }
     }
 
