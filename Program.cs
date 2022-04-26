@@ -29,7 +29,7 @@ app.MapGet("/api/ws", async (HttpContext context) =>
         using (var scope = app.Services.CreateScope())
         {
             var websocketService = scope.ServiceProvider.GetRequiredService<WebSocketService>();
-            await websocketService.Handle(new Guid(), webSocket);
+            await websocketService.Handle(Guid.NewGuid(), webSocket);
         }
     }
     else

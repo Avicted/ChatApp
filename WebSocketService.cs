@@ -52,6 +52,32 @@ public class WebSocketService
             var message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
             var username = chatClient.Username == null ? "anonymous" : chatClient.Username;
 
+            // Does the user want to issue a command?
+            // set username avic
+            var tokens = message.Split(" ");
+            if (tokens.Length == 3)
+            {
+                // Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
+
+                if (tokens[0] == "set")
+                {
+                    if (tokens[1] == "username")
+                    {
+                        lock (websocketConnections)
+                        {
+                            var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
+
+                            if (user != null)
+                            {
+                                Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
+                                user.Username = tokens[2].Trim();
+                            }
+                        }
+                    }
+                }
+            }
+
+
             if (!string.IsNullOrWhiteSpace(message))
                 return $"{DateTime.Now}:[{username}]: {message}";
         }
