@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using System.Text;
+using Newtonsoft.Json;
 
 public class WebSocketService
 {
@@ -8,12 +9,12 @@ public class WebSocketService
         new ChatRoom() {
             Id = new Guid(),
             Clients = new List<ChatClient>(),
-            Name = "default room ~",
+            Name = "~ default room ~",
             Messages = new List<ChatMessage>() {
                 new ChatMessage() {
                     Id = new Guid(),
-                    Message = "Welcome to the default room ~!",
-                    SendDateTime = new DateTime(),
+                    Message = "Welcome to the ~ default room ~ !",
+                    SendDateTime = DateTime.Now,
                 }
             },
         }
@@ -40,14 +41,23 @@ public class WebSocketService
 
         Console.WriteLine($"{chatRooms}");
 
-        await SendMessageToSockets($"User with id {id} has joined the server");
+        await SendMessageToSockets($"User with id {id} has joined the server", null);
+
+        // Send only to the new user joining
+        await SendMessageToSockets("You can set your username with: set username <bob>", new List<ChatClient>() { newClient });
 
         while (webSocket.State == WebSocketState.Open)
         {
             var message = await ReceiveMessage(id, newClient);
             if (message != null)
-                await SendMessageToSockets(message);
+                await SendMessageToSockets(message, null);
         }
+
+        await webSocket.CloseOutputAsync(
+            WebSocketCloseStatus.NormalClosure,
+            "closing websocket",
+            CancellationToken.None
+        );
     }
 
     public async Task<string> ReceiveMessage(Guid id, ChatClient chatClient)
@@ -65,6 +75,7 @@ public class WebSocketService
             if (tokens.Length == 3)
             {
                 // Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
+
 
                 if (tokens[0] == "set")
                 {
@@ -88,17 +99,25 @@ public class WebSocketService
             if (!string.IsNullOrWhiteSpace(message))
                 return $"{DateTime.Now}:[{username}]: {message}";
         }
-        return null;
+        return "";
     }
 
-    private async Task SendMessageToSockets(string message)
+    private async Task SendMessageToSockets(string message, List<ChatClient>? receivers)
     {
         IEnumerable<ChatClient> toSentTo;
 
-        lock (websocketConnections)
+        if (receivers != null)
         {
-            toSentTo = websocketConnections.ToList();
+            toSentTo = (IEnumerable<ChatClient>)receivers;
         }
+        else
+        {
+            lock (websocketConnections)
+            {
+                toSentTo = websocketConnections.ToList();
+            }
+        }
+
 
         var chatMessage = new ChatMessage()
         {
@@ -114,21 +133,25 @@ public class WebSocketService
 
         var tasks = toSentTo.Select(async websocketConnection =>
         {
-            var bytes = Encoding.Default.GetBytes(message);
+            var json = await Task.Run(() => JsonConvert.SerializeObject(chatMessage));
+            var bytes = Encoding.Default.GetBytes(json);
             var arraySegment = new ArraySegment<byte>(bytes);
+
             try
             {
                 if (websocketConnection.WebSocket.State == WebSocketState.Open)
                 {
-                    await websocketConnection.WebSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
-
+                    await websocketConnection.WebSocket.SendAsync(
+                        arraySegment,
+                        WebSocketMessageType.Text,
+                        true,
+                        CancellationToken.None
+                    );
                 }
-
             }
             catch (System.Exception)
             {
-
-                throw;
+                throw new ApiCouldNotSendWebSocketMessageException();
             }
         });
         await Task.WhenAll(tasks);
