@@ -1,8 +1,9 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
+using Spectre.Console;
+using System.Text.Json;
 
 Console.WriteLine("[ ChatApp client ]");
-Console.WriteLine("     -> Connecting to WebSocket server");
 
 var exitEvent = new ManualResetEvent(false);
 var url = new Uri("ws://localhost:8000/api/ws");
@@ -16,11 +17,11 @@ using (var client = new ClientWebSocket())
     try
     {
         await client.ConnectAsync(url, cts.Token);
-        var n = 0;
 
         while (client.State == WebSocketState.Open)
         {
             string message = Console.ReadLine();
+            // var message = AnsiConsole.Ask<string>("[green]message[/]: ");
 
             if (!string.IsNullOrEmpty(message))
             {
@@ -36,7 +37,14 @@ using (var client = new ClientWebSocket())
                     ArraySegment<byte> byteReceived = new ArraySegment<byte>(responseBuffer, offset, packet);
                     WebSocketReceiveResult response = await client.ReceiveAsync(byteReceived, cts.Token);
                     var responseMessage = Encoding.UTF8.GetString(responseBuffer, offset, response.Count);
-                    Console.WriteLine(responseMessage);
+                    // Console.WriteLine(responseMessage);
+
+                    ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(responseMessage);
+
+                    if (chatMessage != null)
+                    {
+                        AnsiConsole.Write($"[{chatMessage.SendDateTime}] - {chatMessage.Message}");
+                    }
 
                     if (response.EndOfMessage)
                         break;

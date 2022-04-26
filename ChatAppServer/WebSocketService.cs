@@ -46,11 +46,13 @@ public class WebSocketService
         // Send only to the new user joining
         await SendMessageToSockets("You can set your username with: set username <bob>", new List<ChatClient>() { newClient });
 
+
         while (webSocket.State == WebSocketState.Open)
         {
             var message = await ReceiveMessage(id, newClient);
             if (message != null)
                 await SendMessageToSockets(message, null);
+
         }
 
         await webSocket.CloseOutputAsync(
@@ -63,43 +65,51 @@ public class WebSocketService
     public async Task<string> ReceiveMessage(Guid id, ChatClient chatClient)
     {
         var arraySegment = new ArraySegment<byte>(new byte[4096]);
-        var receivedMessage = await chatClient.WebSocket.ReceiveAsync(arraySegment, CancellationToken.None);
-        if (receivedMessage.MessageType == WebSocketMessageType.Text)
+
+        try
         {
-            var message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
-            var username = chatClient.Username == null ? "anonymous" : chatClient.Username;
-
-            // Does the user want to issue a command?
-            // set username avic
-            var tokens = message.Split(" ");
-            if (tokens.Length == 3)
+            var receivedMessage = await chatClient.WebSocket.ReceiveAsync(arraySegment, CancellationToken.None);
+            if (receivedMessage.MessageType == WebSocketMessageType.Text)
             {
-                // Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
+                var message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
+                var username = chatClient.Username == null ? "anonymous" : chatClient.Username;
 
-
-                if (tokens[0] == "set")
+                // Does the user want to issue a command?
+                // set username avic
+                var tokens = message.Split(" ");
+                if (tokens.Length == 3)
                 {
-                    if (tokens[1] == "username")
-                    {
-                        lock (websocketConnections)
-                        {
-                            var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
+                    // Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
 
-                            if (user != null)
+
+                    if (tokens[0] == "set")
+                    {
+                        if (tokens[1] == "username")
+                        {
+                            lock (websocketConnections)
                             {
-                                Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
-                                user.Username = tokens[2].Trim();
+                                var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
+
+                                if (user != null)
+                                {
+                                    Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
+                                    user.Username = tokens[2].Trim();
+                                }
                             }
                         }
                     }
                 }
+
+
+                if (!string.IsNullOrWhiteSpace(message))
+                    return $"{DateTime.Now}:[{username}]: {message}";
             }
-
-
-            if (!string.IsNullOrWhiteSpace(message))
-                return $"{DateTime.Now}:[{username}]: {message}";
+            return "";
         }
-        return "";
+        catch (WebSocketException e)
+        {
+            throw new ApiRemotePartyClosedConnectionException();
+        }
     }
 
     private async Task SendMessageToSockets(string message, List<ChatClient>? receivers)
