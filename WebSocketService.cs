@@ -7,7 +7,7 @@ public class WebSocketService
     public List<ChatRoom> chatRooms = new List<ChatRoom>() {
         new ChatRoom() {
             Id = new Guid(),
-            Clients = new List<WebSocket>(),
+            Clients = new List<ChatClient>(),
             Name = "default room ~",
             Messages = new List<ChatMessage>() {
                 new ChatMessage() {
@@ -32,6 +32,13 @@ public class WebSocketService
         {
             websocketConnections.Add(newClient);
         }
+
+        lock (chatRooms)
+        {
+            chatRooms[0].Clients.Add(newClient);
+        }
+
+        Console.WriteLine($"{chatRooms}");
 
         await SendMessageToSockets($"User with id {id} has joined the server");
 
@@ -91,6 +98,18 @@ public class WebSocketService
         lock (websocketConnections)
         {
             toSentTo = websocketConnections.ToList();
+        }
+
+        var chatMessage = new ChatMessage()
+        {
+            Id = Guid.NewGuid(),
+            Message = message,
+            SendDateTime = DateTime.Now,
+        };
+
+        lock (chatRooms)
+        {
+            chatRooms[0].Messages.Add(chatMessage);
         }
 
         var tasks = toSentTo.Select(async websocketConnection =>

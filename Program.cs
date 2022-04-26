@@ -11,7 +11,6 @@ builder.Services.AddSingleton<WebSocketService>();
 var app = builder.Build();
 
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -36,7 +35,15 @@ app.MapGet("/api/ws", async (HttpContext context) =>
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
     }
-    // context.Response.WriteAsync("");
+});
+
+app.MapGet("/api/websocketConnections", () =>
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var websocketService = scope.ServiceProvider.GetRequiredService<WebSocketService>();
+        return websocketService.websocketConnections.ToList();
+    }
 });
 
 app.MapGet("/api/chatrooms", () =>
@@ -44,7 +51,7 @@ app.MapGet("/api/chatrooms", () =>
     using (var scope = app.Services.CreateScope())
     {
         var websocketService = scope.ServiceProvider.GetRequiredService<WebSocketService>();
-        return websocketService.websocketConnections.ToList();
+        return websocketService.chatRooms.ToList();
     }
 });
 

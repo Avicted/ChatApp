@@ -4,7 +4,7 @@ public class ChatRoom
 {
     public Guid Id { get; set; }
     public String Name { get; set; } = null!;
-    public List<WebSocket> Clients { get; set; } = null!;
+    public List<ChatClient> Clients { get; set; } = null!;
     public List<ChatMessage> Messages { get; set; } = null!;
 }
 
