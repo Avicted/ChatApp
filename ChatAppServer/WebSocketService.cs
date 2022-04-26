@@ -15,6 +15,7 @@ public class WebSocketService
                     Id = new Guid(),
                     Message = "Welcome to the ~ default room ~ !",
                     SendDateTime = DateTime.Now,
+                    AuthorUsername = "Server"
                 }
             },
         }
@@ -41,10 +42,25 @@ public class WebSocketService
 
         Console.WriteLine($"{chatRooms}");
 
-        await SendMessageToSockets($"User with id {id} has joined the server", null);
+        ChatMessage userJoinedMessage = new ChatMessage()
+        {
+            Id = Guid.NewGuid(),
+            Message = $"User with id {id} has joined the server",
+            SendDateTime = DateTime.Now,
+            AuthorUsername = "Server"
+        };
+
+        await SendMessageToSockets(userJoinedMessage, null);
 
         // Send only to the new user joining
-        await SendMessageToSockets("You can set your username with: set username <bob>", new List<ChatClient>() { newClient });
+        ChatMessage setUsernameInfoMessage = new ChatMessage()
+        {
+            Id = Guid.NewGuid(),
+            Message = $"You can set your username with: set username <bob>",
+            SendDateTime = DateTime.Now,
+            AuthorUsername = "Server"
+        };
+        await SendMessageToSockets(setUsernameInfoMessage, new List<ChatClient>() { newClient });
 
 
         while (webSocket.State == WebSocketState.Open)
@@ -75,7 +91,7 @@ public class WebSocketService
         webSocket.Dispose();
     }
 
-    public async Task<string> ReceiveMessage(Guid id, ChatClient chatClient)
+    public async Task<ChatMessage?> ReceiveMessage(Guid id, ChatClient chatClient)
     {
         var arraySegment = new ArraySegment<byte>(new byte[4096]);
 
@@ -86,7 +102,7 @@ public class WebSocketService
 
             if (receivedMessage == null)
             {
-                return "";
+                return null;
             }
 
             if (receivedMessage.MessageType == WebSocketMessageType.Text)
@@ -121,10 +137,20 @@ public class WebSocketService
 
 
                 if (!string.IsNullOrWhiteSpace(message))
-                    return $"{DateTime.Now}:[{username}]: {message}";
-            }
-            return "";
+                {
+                    var chatMessage = new ChatMessage()
+                    {
+                        Id = Guid.NewGuid(),
+                        Message = message,
+                        SendDateTime = DateTime.Now,
+                        AuthorUsername = username
+                    };
 
+                    return chatMessage;
+                }
+            }
+
+            return null;
         }
         catch (WebSocketException webSocketException)
         {
@@ -133,11 +159,11 @@ public class WebSocketService
                 // Custom logic
             }
 
-            return "";
+            return null;
         }
     }
 
-    private async Task SendMessageToSockets(string message, List<ChatClient>? receivers)
+    private async Task SendMessageToSockets(ChatMessage chatMessage, List<ChatClient>? receivers)
     {
         IEnumerable<ChatClient> toSentTo;
 
@@ -152,14 +178,6 @@ public class WebSocketService
                 toSentTo = websocketConnections.ToList();
             }
         }
-
-
-        var chatMessage = new ChatMessage()
-        {
-            Id = Guid.NewGuid(),
-            Message = message,
-            SendDateTime = DateTime.Now,
-        };
 
         lock (chatRooms)
         {

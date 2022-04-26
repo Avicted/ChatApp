@@ -20,8 +20,7 @@ using (var client = new ClientWebSocket())
 
         while (client.State == WebSocketState.Open)
         {
-            string message = Console.ReadLine();
-            // var message = AnsiConsole.Ask<string>("[green]message[/]: ");
+            var message = AnsiConsole.Ask<string>("[green]message[/]: ");
 
             if (!string.IsNullOrEmpty(message))
             {
@@ -43,12 +42,13 @@ using (var client = new ClientWebSocket())
 
                     if (chatMessage != null)
                     {
-                        AnsiConsole.Write($"[{chatMessage.SendDateTime}] - {chatMessage.Message}");
+                        AnsiConsole.Write($"[{chatMessage.SendDateTime}] [{chatMessage.AuthorUsername}] - {chatMessage.Message}\n");
                     }
 
                     if (response.EndOfMessage)
                         break;
                 }
+
             }
         }
     }
