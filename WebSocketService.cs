@@ -118,7 +118,11 @@ public class WebSocketService
             var arraySegment = new ArraySegment<byte>(bytes);
             try
             {
-                await websocketConnection.WebSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
+                if (websocketConnection.WebSocket.State == WebSocketState.Open)
+                {
+                    await websocketConnection.WebSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
+
+                }
 
             }
             catch (System.Exception)
