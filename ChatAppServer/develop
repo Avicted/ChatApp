@@ -1,3 +1,4 @@
 #!/bin/bash
 
+dotnet clean
 dotnet run --project ChatApp.csproj
