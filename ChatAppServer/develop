@@ -1,4 +1,4 @@
 #!/bin/bash
 
 dotnet clean
-dotnet run --project ChatApp.csproj
+dotnet run --project ChatApp.csproj --launch-profile ChatApp
