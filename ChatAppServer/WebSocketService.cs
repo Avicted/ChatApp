@@ -15,7 +15,8 @@ public class WebSocketService
                     Id = new Guid(),
                     Message = "Welcome to the ~ default room ~ !",
                     SendDateTime = DateTime.Now,
-                    AuthorUsername = "Server"
+                    AuthorUsername = "Server",
+                    MessageType = MessageType.InfoToUser
                 }
             },
         }
@@ -40,14 +41,17 @@ public class WebSocketService
             chatRooms[0].Clients.Add(newClient);
         }
 
-        Console.WriteLine($"{chatRooms}");
+        // Console.WriteLine($"{chatRooms}");
+
 
         ChatMessage userJoinedMessage = new ChatMessage()
         {
             Id = Guid.NewGuid(),
             Message = $"User with id {id} has joined the server",
             SendDateTime = DateTime.Now,
-            AuthorUsername = "Server"
+            AuthorUsername = "Server",
+            MessageType = MessageType.ServerInfo
+
         };
 
         await SendMessageToSockets(userJoinedMessage, null);
@@ -58,7 +62,8 @@ public class WebSocketService
             Id = Guid.NewGuid(),
             Message = $"You can set your username with: set username <bob>",
             SendDateTime = DateTime.Now,
-            AuthorUsername = "Server"
+            AuthorUsername = "Server",
+            MessageType = MessageType.InfoToUser
         };
         await SendMessageToSockets(setUsernameInfoMessage, new List<ChatClient>() { newClient });
 
@@ -142,7 +147,8 @@ public class WebSocketService
                         Id = Guid.NewGuid(),
                         Message = message,
                         SendDateTime = DateTime.Now,
-                        AuthorUsername = username
+                        AuthorUsername = username,
+                        MessageType = MessageType.Message
                     };
 
                     return chatMessage;

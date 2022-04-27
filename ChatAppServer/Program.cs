@@ -1,3 +1,5 @@
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +8,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add our services
+// remove default logging providers
+builder.Logging.ClearProviders();
+// Serilog configuration		
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
+
+// Register Serilog
+builder.Logging.AddSerilog(logger);
+
 builder.Services.AddSingleton<WebSocketService>();
 
 var app = builder.Build();

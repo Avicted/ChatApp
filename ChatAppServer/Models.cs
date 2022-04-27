@@ -15,10 +15,18 @@ public class ChatClient
     public String Username { get; set; } = null!;
 }
 
+public enum MessageType
+{
+    Message,
+    InfoToUser,
+    ServerInfo,
+}
+
 
 public class ChatMessage
 {
     public Guid Id { get; set; }
+    public MessageType MessageType { get; set; }
     public String AuthorUsername { get; set; } = null!;
     public String Message { get; set; } = null!;
     public DateTime SendDateTime { get; set; }
