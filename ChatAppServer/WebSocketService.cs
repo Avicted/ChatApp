@@ -89,7 +89,7 @@ public class WebSocketService
                     chatRooms[0].Clients.Remove(newClient);
                 }
 
-                throw new ApiRemotePartyClosedConnectionException();
+                throw new ApiRemotePartyClosedConnectionException(e.Message, e.InnerException);
             }
 
         }
@@ -107,8 +107,37 @@ public class WebSocketService
 
             if (!receivedMessage.CloseStatus.HasValue && receivedMessage.MessageType == WebSocketMessageType.Text)
             {
-                var message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
-                var username = chatClient.Username == null ? "anonymous" : chatClient.Username;
+                string message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
+                ChatMessage? chatMessage;
+
+                try
+                {
+                    chatMessage = JsonConvert.DeserializeObject<ChatMessage>(message);
+                }
+                catch (JsonReaderException e)
+                {
+                    throw new ApiCouldNotReadJsonException(e.Message, e.InnerException);
+                }
+
+                string? username = chatClient.Username == null ? "anonymous" : chatClient.Username;
+
+                if (chatMessage == null || username == null)
+                    return null;
+
+                switch (chatMessage.MessageType)
+                {
+                    case MessageType.Message:
+
+                        break;
+                    case MessageType.InfoToUser:
+
+                        break;
+                    case MessageType.ServerInfo:
+
+                        break;
+                    default:
+                        return null;
+                }
 
                 // Does the user want to issue a command?
                 // set username avic
@@ -138,7 +167,7 @@ public class WebSocketService
 
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    var chatMessage = new ChatMessage()
+                    chatMessage = new ChatMessage()
                     {
                         Id = Guid.NewGuid(),
                         Message = message,
@@ -196,9 +225,9 @@ public class WebSocketService
 
         var tasks = toSentTo.Select(async websocketConnection =>
         {
-            var json = await Task.Run(() => JsonConvert.SerializeObject(chatMessage));
-            var bytes = Encoding.Default.GetBytes(json);
-            var arraySegment = new ArraySegment<byte>(bytes);
+            string? chatMessageString = await Task.Run(() => JsonConvert.SerializeObject(chatMessage));
+            var chatMessageBytes = Encoding.Default.GetBytes(chatMessageString);
+            var arraySegment = new ArraySegment<byte>(chatMessageBytes);
 
             try
             {
@@ -212,9 +241,9 @@ public class WebSocketService
                     );
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
-                throw new ApiCouldNotSendWebSocketMessageException();
+                throw new ApiCouldNotSendWebSocketMessageException(e.Message, e.InnerException);
             }
         });
         await Task.WhenAll(tasks);
