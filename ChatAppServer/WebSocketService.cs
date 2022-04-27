@@ -28,7 +28,8 @@ public class WebSocketService
         var newClient = new ChatClient
         {
             Id = id,
-            WebSocket = webSocket
+            WebSocket = webSocket,
+            Username = "anonymous",
         };
 
         lock (websocketConnections)
@@ -42,6 +43,15 @@ public class WebSocketService
         }
 
         // Console.WriteLine($"{chatRooms}");
+
+        // Send all existing messages to the new user
+        Console.WriteLine($"        -> Sending {chatRooms[0].Messages.Count} messages to the new client.");
+
+        /* for (var i = 0; i < chatRooms[0].Messages.Count; i++)
+        {
+            ChatMessage existingChatMessage = chatRooms[0].Messages[i];
+            await SendMessageToSockets(existingChatMessage, new List<ChatClient>() { newClient });
+        } */
 
 
         ChatMessage userJoinedMessage = new ChatMessage()
@@ -57,7 +67,7 @@ public class WebSocketService
         await SendMessageToSockets(userJoinedMessage, null);
 
         // Send only to the new user joining
-        ChatMessage setUsernameInfoMessage = new WelcomeNewUserMessage()
+        ChatMessage welcomeMessage = new WelcomeNewUserMessage()
         {
             Id = Guid.NewGuid(),
             Message = $"You can set your username with: set username <bob>",
@@ -70,7 +80,7 @@ public class WebSocketService
                 Username = "anonymous"
             }
         };
-        await SendMessageToSockets(setUsernameInfoMessage, new List<ChatClient>() { newClient });
+        await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { newClient });
 
         while (webSocket.State == WebSocketState.Open)
         {
@@ -149,30 +159,55 @@ public class WebSocketService
 
                             // Does the user want to issue a command?
                             // set username <username_here>
-                            var tokens = message.Split(" ");
+                            var tokens = chatMessage.Message.Split(" ");
                             if (tokens.Length == 3)
                             {
-                                // Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
+                                Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
 
                                 if (tokens[0] == "set")
                                 {
                                     if (tokens[1] == "username")
                                     {
-                                        lock (websocketConnections)
-                                        {
-                                            var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
+                                        Console.WriteLine("if (tokens[1] == username)");
+                                        var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
+                                        Console.WriteLine($"user: {user}");
 
-                                            if (user != null)
+                                        if (user != null)
+                                        {
+                                            Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
+                                            user.Username = tokens[2].Trim();
+
+                                            ChatMessage welcomeMessage = new WelcomeNewUserMessage()
                                             {
-                                                Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
-                                                user.Username = tokens[2].Trim();
-                                            }
+                                                Id = chatClient.Id,
+                                                Message = $"Username successfully set!",
+                                                SendDateTime = DateTime.Now,
+                                                AuthorUsername = "Server",
+                                                MessageType = MessageType.InfoToUser,
+                                                WelcomeData = new WelcomeData()
+                                                {
+                                                    UserId = id,
+                                                    Username = user.Username
+                                                }
+                                            };
+                                            await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { chatClient });
                                         }
+
                                     }
                                 }
                             }
                             break;
                         default:
+                            ChatMessage unknownCommandMessage = new ChatMessage()
+                            {
+                                Id = chatClient.Id,
+                                Message = $"Unknown command!",
+                                SendDateTime = DateTime.Now,
+                                AuthorUsername = "Server",
+                                MessageType = MessageType.InfoToUser,
+                            };
+                            await SendMessageToSockets(unknownCommandMessage, new List<ChatClient>() { chatClient });
+
                             return null;
                     }
                 }
@@ -217,6 +252,7 @@ public class WebSocketService
 
     private async Task SendMessageToSockets(ChatMessage chatMessage, List<ChatClient>? receivers)
     {
+
         IEnumerable<ChatClient> toSentTo;
 
         if (receivers != null)

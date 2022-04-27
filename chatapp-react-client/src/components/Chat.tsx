@@ -5,6 +5,7 @@ import {
     IChatMessage,
     IWelcomeNewUserMessage,
 } from "../interfaces/IChatMessage";
+import { format, formatDistance, formatRelative, subDays } from "date-fns";
 
 const Chat = (): JSX.Element => {
     const socketUrl = "ws://127.0.0.1:8000/api/ws";
@@ -20,6 +21,7 @@ const Chat = (): JSX.Element => {
         () =>
             sendMessage(
                 JSON.stringify({
+                    AuthorId: ourUserId,
                     AuthorUsername: username,
                     MessageType: userInput.startsWith("set ")
                         ? MessageType.Command
@@ -27,10 +29,16 @@ const Chat = (): JSX.Element => {
                     Message: userInput,
                 })
             ),
-        []
+        [userInput]
     );
 
     const handleUserInput = (e: any) => {
+        console.log({
+            info: handleUserInput,
+            "e.target.value": e.target.value,
+            userInput,
+        });
+
         setUserInput(e.target.value);
     };
 
@@ -45,6 +53,8 @@ const Chat = (): JSX.Element => {
     useEffect(() => {
         // Handle incomming messages
         if (lastMessage !== null) {
+            setMessageHistory((prev) => prev.concat(chatMessage));
+
             const chatMessage: IWelcomeNewUserMessage = {
                 ...JSON.parse(lastMessage.data),
             };
@@ -57,7 +67,7 @@ const Chat = (): JSX.Element => {
             });
 
             // Commands
-            if (chatMessage.MessageType === MessageType.Command) {
+            if (chatMessage.MessageType === MessageType.Message) {
                 if (chatMessage.AuthorId === ourUserId) {
                     const newUsername = chatMessage.Message.split(" ")[2];
                     console.log(`settings our username to: ${newUsername}`);
@@ -75,8 +85,6 @@ const Chat = (): JSX.Element => {
                     setOurUserId(chatMessage.WelcomeData.UserId);
                 }
             }
-
-            setMessageHistory((prev) => prev.concat(chatMessage));
         }
     }, [lastMessage, setMessageHistory]);
 
@@ -101,7 +109,14 @@ const Chat = (): JSX.Element => {
                 <ul>
                     {messageHistory.map((m: IChatMessage, index: number) => (
                         <li className="Message" key={index}>
-                            <b className="DateTimeSend">{m.SendDateTime} :: </b>
+                            <b className="DateTimeSend">
+                                {formatDistance(
+                                    new Date(),
+                                    new Date(m.SendDateTime),
+                                    { addSuffix: false }
+                                )}{" "}
+                                ::{" "}
+                            </b>
                             <b className="Author">{m.AuthorUsername} :: </b>
                             <span className="MessageText">{m.Message}</span>
                         </li>
@@ -109,13 +124,9 @@ const Chat = (): JSX.Element => {
                 </ul>
             </div>
             <div id="input-box">
-                <input
-                    type="text"
-                    value={userInput}
-                    onChange={(e) => handleUserInput(e)}
-                />
+                <input type="text" onChange={(e) => handleUserInput(e)} />
                 <button
-                    onClick={handleClickSendMessage}
+                    onClick={(e) => handleClickSendMessage()}
                     disabled={readyState !== ReadyState.OPEN}
                 >
                     <b>Send</b>
