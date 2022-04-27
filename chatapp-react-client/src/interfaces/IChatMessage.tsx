@@ -1,15 +1,31 @@
 export enum MessageType {
-    Message = "Message",
-    InfoToUser = "InfoToUser",
-    ServerInfo = "ServerInfo",
+    Message,
+    InfoToUser,
+    ServerInfo,
+    Command,
 }
 
-interface IChatMessage {
-    AuthorUsername: string;
+export interface IChatMessage {
     Id: string;
+    AuthorId: string;
+    AuthorUsername: string;
     MessageType: MessageType;
     Message: string;
     SendDateTime: string;
 }
 
-export default IChatMessage;
+export interface ISendChatMessage {
+    MyUserId: string;
+    MyUsername: string;
+    MessageType: MessageType;
+    Message: string;
+}
+
+export interface IWelcomeData {
+    UserId: string;
+    Username: string;
+}
+
+export interface IWelcomeNewUserMessage extends IChatMessage {
+    WelcomeData: IWelcomeData;
+}
