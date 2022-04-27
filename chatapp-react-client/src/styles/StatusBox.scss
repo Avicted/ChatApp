@@ -1,0 +1,15 @@
+@mixin borders {
+  border: 1px solid $c-aqua;
+}
+
+.StatusBox {
+  @include borders;
+  border-bottom: none;
+  border-radius: 10px 10px 0px 0px; 
+  font-size: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
