@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import useWebSocket, { ReadyState } from "react-use-websocket";
 
 interface AppProps {}
 
@@ -18,39 +19,54 @@ interface ChatMessage {
 
 // App wraps all routes e.g. all pages
 export const App: React.FunctionComponent<AppProps> = ({}) => {
-    var W3CWebSocket = require("websocket").w3cwebsocket;
+    //Public API that will echo messages sent to it back to the client
+    const [socketUrl, setSocketUrl] = useState("ws://127.0.0.1:8000/api/ws");
+    const [messageHistory, setMessageHistory] = useState<any[]>([]);
 
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
     useEffect(() => {
-        const client = new W3CWebSocket("ws://127.0.0.1:8000/api/ws");
+        if (lastMessage !== null) {
+            setMessageHistory((prev) => prev.concat(lastMessage as any));
+        }
+    }, [lastMessage, setMessageHistory]);
 
-        client.onopen = () => {
-            console.log("WebSocket Client Connected");
-        };
+    const handleClickChangeSocketUrl = useCallback(
+        () => setSocketUrl("ws://127.0.0.1:8000/api/ws"),
+        []
+    );
 
-        client.onmessage = (message: MessageEvent) => {
-            const json: ChatMessage = JSON.parse(message.data);
-            console.log(json.Message);
+    const handleClickSendMessage = useCallback(() => sendMessage("Hello"), []);
 
-            setMessages([...messages, json]);
-        };
-
-        client.onerror = function () {
-            console.log("Connection Error");
-        };
-    }, []);
+    const connectionStatus = {
+        [ReadyState.CONNECTING]: "Connecting",
+        [ReadyState.OPEN]: "Open",
+        [ReadyState.CLOSING]: "Closing",
+        [ReadyState.CLOSED]: "Closed",
+        [ReadyState.UNINSTANTIATED]: "Uninstantiated",
+    }[readyState];
 
     return (
-        <>
-            <h1>Messages</h1>
-            {messages.map((message, index) => (
-                <p key={index}>
-                    [{message.SendDateTime}][{message.AuthorUsername}][
-                    {message.MessageType.toString()}]: {message.Message}
-                </p>
-            ))}
-        </>
+        <div>
+            <button onClick={handleClickChangeSocketUrl}>
+                Click Me to change Socket Url
+            </button>
+            <button
+                onClick={handleClickSendMessage}
+                disabled={readyState !== ReadyState.OPEN}
+            >
+                Click Me to send 'Hello'
+            </button>
+            <span>The WebSocket is currently {connectionStatus}</span>
+            {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+            <ul>
+                {messageHistory.map((message, idx) => (
+                    <span key={idx}>
+                        {message ? <pre>{message.data}</pre> : null}
+                    </span>
+                ))}
+            </ul>
+        </div>
     );
 };
 

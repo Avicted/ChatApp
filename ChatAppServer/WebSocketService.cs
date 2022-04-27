@@ -103,13 +103,7 @@ public class WebSocketService
         {
             var receivedMessage = await chatClient.WebSocket.ReceiveAsync(arraySegment, CancellationToken.None);
 
-
-            if (receivedMessage == null)
-            {
-                return null;
-            }
-
-            if (receivedMessage.MessageType == WebSocketMessageType.Text)
+            if (!receivedMessage.CloseStatus.HasValue && receivedMessage.MessageType == WebSocketMessageType.Text)
             {
                 var message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
                 var username = chatClient.Username == null ? "anonymous" : chatClient.Username;
@@ -154,6 +148,12 @@ public class WebSocketService
                     return chatMessage;
                 }
             }
+
+            await chatClient.WebSocket.CloseAsync(
+                receivedMessage.CloseStatus.Value,
+                receivedMessage.CloseStatusDescription,
+                CancellationToken.None
+            );
 
             return null;
         }
