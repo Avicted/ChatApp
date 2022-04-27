@@ -108,11 +108,11 @@ public class WebSocketService
             if (!receivedMessage.CloseStatus.HasValue && receivedMessage.MessageType == WebSocketMessageType.Text)
             {
                 string message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
-                ChatMessage? chatMessage;
+                ChatMessage? chatMessage = null;
 
                 try
                 {
-                    chatMessage = JsonConvert.DeserializeObject<ChatMessage>(message);
+                    // chatMessage = JsonConvert.DeserializeObject<ChatMessage>(message);
                 }
                 catch (JsonReaderException e)
                 {
@@ -121,22 +121,25 @@ public class WebSocketService
 
                 string? username = chatClient.Username == null ? "anonymous" : chatClient.Username;
 
-                if (chatMessage == null || username == null)
+                if (message == null)
                     return null;
 
-                switch (chatMessage.MessageType)
+                if (chatMessage != null)
                 {
-                    case MessageType.Message:
+                    switch (chatMessage.MessageType)
+                    {
+                        case MessageType.Message:
 
-                        break;
-                    case MessageType.InfoToUser:
+                            break;
+                        case MessageType.InfoToUser:
 
-                        break;
-                    case MessageType.ServerInfo:
+                            break;
+                        case MessageType.ServerInfo:
 
-                        break;
-                    default:
-                        return null;
+                            break;
+                        default:
+                            return null;
+                    }
                 }
 
                 // Does the user want to issue a command?
