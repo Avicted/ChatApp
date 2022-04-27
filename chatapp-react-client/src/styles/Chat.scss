@@ -47,11 +47,12 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    
     .Message {
       font-family: $f-mono;
       font-size: 12px;
       margin: 8px;
+      word-wrap: break-word;
+
       .Author {
         color: $c-green;
       }

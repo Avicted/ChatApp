@@ -19,7 +19,6 @@ const Chat = (): JSX.Element => {
 	const [username, setUsername] = useState<string>("anonymous");
 	const [ourUserId, setOurUserId] = useState<string>("");
 
-<<<<<<< HEAD
 	const handleClickSendMessage = useCallback(
 		() =>
 			sendMessage(
@@ -32,24 +31,8 @@ const Chat = (): JSX.Element => {
 					Message: userInput,
 				})
 			),
-		[userInput]
+		[userInput, username, ourUserId]
 	);
-=======
-    const handleClickSendMessage = useCallback(
-        () =>
-            sendMessage(
-                JSON.stringify({
-                    AuthorId: ourUserId,
-                    AuthorUsername: username,
-                    MessageType: userInput.startsWith("set ")
-                        ? MessageType.Command
-                        : MessageType.Message,
-                    Message: userInput,
-                })
-            ),
-        [userInput, username, ourUserId]
-    );
->>>>>>> main
 
 	const handleUserInput = (e: any) => {
 		console.log({
@@ -85,20 +68,9 @@ const Chat = (): JSX.Element => {
 				"MessageType.InfoToUser": MessageType.InfoToUser,
 			});
 
-<<<<<<< HEAD
 			// Commands
 			if (chatMessage.MessageType === MessageType.Message) {
-				if (chatMessage.AuthorId === ourUserId) {
-					const newUsername = chatMessage.Message.split(" ")[2];
-					console.log(`settings our username to: ${newUsername}`);
-					setUsername(newUsername);
-				}
 			}
-=======
-            // Commands
-            if (chatMessage.MessageType === MessageType.Message) {
-            }
->>>>>>> main
 
 			// Set our user Id once we connect
 			if (chatMessage.MessageType === MessageType.InfoToUser) {
@@ -116,10 +88,10 @@ const Chat = (): JSX.Element => {
 	return (
 		<div className="Chat">
 			<div>
-        <StatusBox connection={connectionStatus} username={username} />
+				<StatusBox connection={connectionStatus} username={username} />
 			</div>
 			<div id="message-box">
-				<ul>
+			<ul>
 					{messageHistory.map((m: IChatMessage, index: number) => (
 						<li className="Message" key={index}>
 							<b className="DateTimeSend">
@@ -128,8 +100,12 @@ const Chat = (): JSX.Element => {
 								})}{" "}
 								::{" "}
 							</b>
-							<b className="Author">{m.AuthorUsername} :: </b>
-							<span className="MessageText">{m.Message}</span>
+							<b className="Author">
+								{m.AuthorUsername} :: 
+							</b>
+							<span className="MessageText">
+								{m.Message}
+							</span>
 						</li>
 					))}
 				</ul>
