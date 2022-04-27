@@ -31,11 +31,6 @@ export const App: React.FunctionComponent<AppProps> = ({}) => {
         }
     }, [lastMessage, setMessageHistory]);
 
-    const handleClickChangeSocketUrl = useCallback(
-        () => setSocketUrl("ws://127.0.0.1:8000/api/ws"),
-        []
-    );
-
     const handleClickSendMessage = useCallback(() => sendMessage("Hello"), []);
 
     const connectionStatus = {
@@ -48,9 +43,6 @@ export const App: React.FunctionComponent<AppProps> = ({}) => {
 
     return (
         <div>
-            <button onClick={handleClickChangeSocketUrl}>
-                Click Me to change Socket Url
-            </button>
             <button
                 onClick={handleClickSendMessage}
                 disabled={readyState !== ReadyState.OPEN}
