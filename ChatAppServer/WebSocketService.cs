@@ -12,7 +12,7 @@ public class WebSocketService
             Name = "~ default room ~",
             Messages = new List<ChatMessage>() {
                 new ChatMessage() {
-                    Id = new Guid(),
+                    Id = Guid.NewGuid(),
                     Message = "Welcome to the ~ default room ~ !",
                     SendDateTime = DateTime.Now,
                     AuthorUsername = "Server",
@@ -57,13 +57,18 @@ public class WebSocketService
         await SendMessageToSockets(userJoinedMessage, null);
 
         // Send only to the new user joining
-        ChatMessage setUsernameInfoMessage = new ChatMessage()
+        ChatMessage setUsernameInfoMessage = new WelcomeNewUserMessage()
         {
             Id = Guid.NewGuid(),
             Message = $"You can set your username with: set username <bob>",
             SendDateTime = DateTime.Now,
             AuthorUsername = "Server",
-            MessageType = MessageType.InfoToUser
+            MessageType = MessageType.InfoToUser,
+            WelcomeData = new WelcomeData()
+            {
+                UserId = id,
+                Username = "anonymous"
+            }
         };
         await SendMessageToSockets(setUsernameInfoMessage, new List<ChatClient>() { newClient });
 
