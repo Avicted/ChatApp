@@ -20,6 +20,7 @@ public enum MessageType
     Message,
     InfoToUser,
     ServerInfo,
+    Command,
 }
 
 
