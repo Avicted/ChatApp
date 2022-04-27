@@ -19,6 +19,7 @@ const Chat = (): JSX.Element => {
 	const [username, setUsername] = useState<string>("anonymous");
 	const [ourUserId, setOurUserId] = useState<string>("");
 
+<<<<<<< HEAD
 	const handleClickSendMessage = useCallback(
 		() =>
 			sendMessage(
@@ -33,6 +34,22 @@ const Chat = (): JSX.Element => {
 			),
 		[userInput]
 	);
+=======
+    const handleClickSendMessage = useCallback(
+        () =>
+            sendMessage(
+                JSON.stringify({
+                    AuthorId: ourUserId,
+                    AuthorUsername: username,
+                    MessageType: userInput.startsWith("set ")
+                        ? MessageType.Command
+                        : MessageType.Message,
+                    Message: userInput,
+                })
+            ),
+        [userInput, username, ourUserId]
+    );
+>>>>>>> main
 
 	const handleUserInput = (e: any) => {
 		console.log({
@@ -68,6 +85,7 @@ const Chat = (): JSX.Element => {
 				"MessageType.InfoToUser": MessageType.InfoToUser,
 			});
 
+<<<<<<< HEAD
 			// Commands
 			if (chatMessage.MessageType === MessageType.Message) {
 				if (chatMessage.AuthorId === ourUserId) {
@@ -76,6 +94,11 @@ const Chat = (): JSX.Element => {
 					setUsername(newUsername);
 				}
 			}
+=======
+            // Commands
+            if (chatMessage.MessageType === MessageType.Message) {
+            }
+>>>>>>> main
 
 			// Set our user Id once we connect
 			if (chatMessage.MessageType === MessageType.InfoToUser) {
