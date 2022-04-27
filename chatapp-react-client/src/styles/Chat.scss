@@ -44,6 +44,7 @@
 
   #message-box {
     @include borders;
+    background-color: $c-bg-l;
     display: flex;
     flex-direction: column;
     height: 100%;
