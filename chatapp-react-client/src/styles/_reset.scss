@@ -1,0 +1,16 @@
+html,body,ul,li,button,a,b,p,i,div,input { padding: 0; margin: 0}
+ul,li { list-style: none; }
+h1,h2,h3,h4,h5,h6 { font-family: $f-sans; }
+a,b,p,i,div,ul,li { font-family: $f-mono; }
+
+html, body {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  background-color: $c-bg;
+  color: $c-fg;
+}
+
+*:focus {
+  outline: none;
+}

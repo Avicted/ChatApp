@@ -1,0 +1,55 @@
+.Chat{
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  @mixin borders {
+      border: 1px solid $c-fg;
+  }
+
+  #input-box {
+    margin: 15px;
+    display: flex;
+    height: 45px;
+
+    input,button{
+      @include borders;
+      color: $c-fg;
+      background-color: transparent;
+    }
+
+    input {
+      border-radius: 10px 0px 0px 10px;
+      border-right: none;
+      width: 100%;
+    }
+
+    button {
+      border-radius: 0px 10px 10px 0px;
+      min-width: 80px;
+    }
+  }
+
+  #message-box {
+    @include borders;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+    .Message {
+      font-family: $f-mono;
+      font-size: 10px;
+      margin-top: 3px;
+      margin-bottom: 10px;
+
+      .Author {
+        color: $c-green;
+      }
+
+      .MessageText{
+        color: $c-purple;
+      }
+    }
+  }
+}
