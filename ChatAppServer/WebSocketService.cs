@@ -62,7 +62,6 @@ public class WebSocketService
         };
         await SendMessageToSockets(setUsernameInfoMessage, new List<ChatClient>() { newClient });
 
-
         while (webSocket.State == WebSocketState.Open)
         {
             try
