@@ -1,15 +1,16 @@
 .Chat{
+  padding: 15px;
   width: 800px;
+  height: 800px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 
   @mixin borders {
-      border: 1px solid $c-fg;
+      border: 1px solid $c-aqua;
   }
 
   #input-box {
-    margin: 15px;
     display: flex;
     height: 45px;
 
@@ -20,14 +21,24 @@
     }
 
     input {
-      border-radius: 10px 0px 0px 10px;
+      border-top: none;
+      padding-left: 15px;
+      border-radius: 0px 0px 0px 10px;
       border-right: none;
       width: 100%;
     }
 
     button {
-      border-radius: 0px 10px 10px 0px;
+      transition: 0.2s ease-in-out;
+      cursor: pointer;
+      border-top: none;
+      border-radius: 0px 0px 10px 0px;
       min-width: 80px;
+    }
+
+    button:hover {
+      background-color: $c-aqua;
+      color: $c-bg;
     }
   }
 
@@ -39,10 +50,8 @@
     
     .Message {
       font-family: $f-mono;
-      font-size: 10px;
-      margin-top: 3px;
-      margin-bottom: 10px;
-
+      font-size: 12px;
+      margin: 8px;
       .Author {
         color: $c-green;
       }
