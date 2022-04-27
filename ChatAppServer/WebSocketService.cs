@@ -171,6 +171,26 @@ public class WebSocketService
                                     var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
                                     Console.WriteLine($"user: {user}");
 
+                                    // Check if the username is already taken:
+                                    ChatClient? userNameTaken = chatRooms[0].Clients.Find(c => c.Username == tokens[2]);
+
+                                    // The username is taken
+                                    if (userNameTaken != null)
+                                    {
+                                        ChatMessage usernameTakenMessage = new WelcomeNewUserMessage()
+                                        {
+                                            Id = chatClient.Id,
+                                            Message = $"The username {tokens[2]} is already taken!",
+                                            SendDateTime = DateTime.Now,
+                                            AuthorUsername = "Server",
+                                            MessageType = MessageType.InfoToUser,
+                                        };
+
+                                        await SendMessageToSockets(usernameTakenMessage, new List<ChatClient>() { chatClient });
+
+                                        return null;
+                                    }
+
                                     if (user != null)
                                     {
                                         Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
