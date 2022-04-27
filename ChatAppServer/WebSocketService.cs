@@ -42,19 +42,17 @@ public class WebSocketService
             chatRooms[0].Clients.Add(newClient);
         }
 
-        // Console.WriteLine($"{chatRooms}");
+        ChatMessage welcomeMessage = new ChatMessage()
+        {
+            Id = Guid.NewGuid(),
+            Message = chatRooms[0].Messages[0].Message,
+            SendDateTime = DateTime.Now,
+            AuthorUsername = "Server",
+            MessageType = MessageType.ServerInfo
 
-        // Send all existing messages to the new user
-        Console.WriteLine($"        -> Sending {chatRooms[0].Messages.Count} messages to the new client.");
+        };
 
-        /*  for (var i = 0; i < chatRooms[0].Messages.Count; i++)
-         {
-             ChatMessage existingChatMessage = chatRooms[0].Messages[i];
-
-             if (existingChatMessage.MessageType == MessageType.Message)
-                 await SendMessageToSockets(existingChatMessage, new List<ChatClient>() { newClient });
-         } */
-
+        await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { newClient });
 
         ChatMessage userJoinedMessage = new ChatMessage()
         {
@@ -69,7 +67,7 @@ public class WebSocketService
         await SendMessageToSockets(userJoinedMessage, null);
 
         // Send only to the new user joining
-        ChatMessage welcomeMessage = new WelcomeNewUserMessage()
+        ChatMessage setYourUsernameMessage = new WelcomeNewUserMessage()
         {
             Id = Guid.NewGuid(),
             Message = $"You can set your username with: set username <bob>",
@@ -82,7 +80,7 @@ public class WebSocketService
                 Username = "anonymous"
             }
         };
-        await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { newClient });
+        await SendMessageToSockets(setYourUsernameMessage, new List<ChatClient>() { newClient });
 
         while (webSocket.State == WebSocketState.Open)
         {
