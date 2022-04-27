@@ -147,7 +147,7 @@ public class WebSocketService
                     {
                         case MessageType.Message:
                             Console.WriteLine("MessageType.Message");
-                            break;
+                            return chatMessage;
                         case MessageType.InfoToUser:
                             Console.WriteLine("MessageType.InfoToUser");
                             break;
