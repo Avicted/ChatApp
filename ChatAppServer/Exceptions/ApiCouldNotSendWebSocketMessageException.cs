@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 
+namespace ChatAppServer.Exceptions;
 public class ApiCouldNotSendWebSocketMessageException : Exception
 {
     public ApiCouldNotSendWebSocketMessageException()

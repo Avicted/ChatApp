@@ -1,5 +1,7 @@
 using System.Net.WebSockets;
 
+namespace ChatAppServer.Models;
+
 public class ChatRoom
 {
     public Guid Id { get; set; }
@@ -21,6 +23,7 @@ public enum MessageType
     InfoToUser,
     ServerInfo,
     Command,
+    Voice,
 }
 
 

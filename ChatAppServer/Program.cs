@@ -1,4 +1,6 @@
+using ChatAppServer.Services;
 using Serilog;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,7 +57,7 @@ app.MapGet("/api/websocketConnections", () =>
     using (var scope = app.Services.CreateScope())
     {
         var websocketService = scope.ServiceProvider.GetRequiredService<WebSocketService>();
-        return websocketService.websocketConnections.ToList();
+        return websocketService.GetWebSocketConnections().ToList();
     }
 });
 
