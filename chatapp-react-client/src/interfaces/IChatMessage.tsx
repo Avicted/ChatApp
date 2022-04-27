@@ -14,13 +14,6 @@ export interface IChatMessage {
     SendDateTime: string;
 }
 
-export interface ISendChatMessage {
-    AuthorId: string;
-    AuthorUsername: string;
-    MessageType: MessageType;
-    Message: string;
-}
-
 export interface IWelcomeData {
     UserId: string;
     Username: string;
