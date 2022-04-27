@@ -77,6 +77,8 @@ public class WebSocketService
             }
             catch (WebSocketException e)
             {
+                Console.WriteLine(e.Message);
+
                 lock (websocketConnections)
                 {
                     websocketConnections.Remove(newClient);
@@ -149,11 +151,14 @@ public class WebSocketService
                 }
             }
 
-            await chatClient.WebSocket.CloseAsync(
-                receivedMessage.CloseStatus.Value,
-                receivedMessage.CloseStatusDescription,
-                CancellationToken.None
-            );
+            if (receivedMessage.CloseStatus != null)
+            {
+                await chatClient.WebSocket.CloseAsync(
+                    receivedMessage.CloseStatus.Value,
+                    receivedMessage.CloseStatusDescription,
+                    CancellationToken.None
+                );
+            }
 
             return null;
         }
