@@ -15,8 +15,8 @@ export interface IChatMessage {
 }
 
 export interface ISendChatMessage {
-    MyUserId: string;
-    MyUsername: string;
+    AuthorId: string;
+    AuthorUsername: string;
     MessageType: MessageType;
     Message: string;
 }
@@ -26,6 +26,12 @@ export interface IWelcomeData {
     Username: string;
 }
 
-export interface IWelcomeNewUserMessage extends IChatMessage {
+export interface IWelcomeNewUserMessage {
+    Id: string;
+    AuthorId: string;
+    AuthorUsername: string;
+    MessageType: MessageType;
+    Message: string;
+    SendDateTime: string;
     WelcomeData: IWelcomeData;
 }
