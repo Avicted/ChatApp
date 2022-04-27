@@ -68,16 +68,6 @@ const Chat = (): JSX.Element => {
 
             // Commands
             if (chatMessage.MessageType === MessageType.Message) {
-                if (chatMessage.AuthorId === ourUserId) {
-                    if (
-                        chatMessage.Message.split(" ")[0] === "set" &&
-                        chatMessage.Message.split(" ")[1] === "username"
-                    ) {
-                        const newUsername = chatMessage.Message.split(" ")[2];
-                        console.log(`settings our username to: ${newUsername}`);
-                        setUsername(newUsername);
-                    }
-                }
             }
 
             // Set our user Id once we connect
