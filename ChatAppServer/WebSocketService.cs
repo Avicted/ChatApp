@@ -47,11 +47,13 @@ public class WebSocketService
         // Send all existing messages to the new user
         Console.WriteLine($"        -> Sending {chatRooms[0].Messages.Count} messages to the new client.");
 
-        /* for (var i = 0; i < chatRooms[0].Messages.Count; i++)
-        {
-            ChatMessage existingChatMessage = chatRooms[0].Messages[i];
-            await SendMessageToSockets(existingChatMessage, new List<ChatClient>() { newClient });
-        } */
+        /*  for (var i = 0; i < chatRooms[0].Messages.Count; i++)
+         {
+             ChatMessage existingChatMessage = chatRooms[0].Messages[i];
+
+             if (existingChatMessage.MessageType == MessageType.Message)
+                 await SendMessageToSockets(existingChatMessage, new List<ChatClient>() { newClient });
+         } */
 
 
         ChatMessage userJoinedMessage = new ChatMessage()
@@ -122,14 +124,14 @@ public class WebSocketService
 
             if (!receivedMessage.CloseStatus.HasValue && receivedMessage.MessageType == WebSocketMessageType.Text)
             {
-                string message = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
-                Console.WriteLine("message:");
-                Console.WriteLine(message);
+                string rawMessageString = Encoding.Default.GetString(arraySegment).TrimEnd('\0');
+                Console.WriteLine("rawMessageString:");
+                Console.WriteLine(rawMessageString);
                 ChatMessage? chatMessage = null;
 
                 try
                 {
-                    chatMessage = JsonConvert.DeserializeObject<ChatMessage>(message);
+                    chatMessage = JsonConvert.DeserializeObject<ChatMessage>(rawMessageString);
                 }
                 catch
                 {
@@ -138,93 +140,92 @@ public class WebSocketService
 
                 string? username = chatClient.Username == null ? "anonymous" : chatClient.Username;
 
-                if (message == null)
+                if (chatMessage == null)
                     return null;
 
-                if (chatMessage != null)
+
+                switch (chatMessage.MessageType)
                 {
-                    switch (chatMessage.MessageType)
-                    {
-                        case MessageType.Message:
-                            Console.WriteLine("MessageType.Message");
-                            return chatMessage;
-                        case MessageType.InfoToUser:
-                            Console.WriteLine("MessageType.InfoToUser");
-                            break;
-                        case MessageType.ServerInfo:
-                            Console.WriteLine("MessageType.ServerInfo");
-                            break;
-                        case MessageType.Command:
-                            Console.WriteLine("MessageType.Command");
+                    case MessageType.Message:
+                        Console.WriteLine("MessageType.Message");
+                        break;
+                    case MessageType.InfoToUser:
+                        Console.WriteLine("MessageType.InfoToUser");
+                        break;
+                    case MessageType.ServerInfo:
+                        Console.WriteLine("MessageType.ServerInfo");
+                        break;
+                    case MessageType.Command:
+                        Console.WriteLine("MessageType.Command");
 
-                            // Does the user want to issue a command?
-                            // set username <username_here>
-                            var tokens = chatMessage.Message.Split(" ");
-                            if (tokens.Length == 3)
+                        // Does the user want to issue a command?
+                        // set username <username_here>
+                        var tokens = chatMessage.Message.Split(" ");
+                        if (tokens.Length == 3)
+                        {
+                            Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
+
+                            if (tokens[0] == "set")
                             {
-                                Console.WriteLine($"tokens[0]: {tokens[0]}\ntokens[1]: {tokens[1]}\ntokens[2]: {tokens[2]}\n");
-
-                                if (tokens[0] == "set")
+                                if (tokens[1] == "username")
                                 {
-                                    if (tokens[1] == "username")
+                                    Console.WriteLine("if (tokens[1] == username)");
+                                    var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
+                                    Console.WriteLine($"user: {user}");
+
+                                    if (user != null)
                                     {
-                                        Console.WriteLine("if (tokens[1] == username)");
-                                        var user = websocketConnections.FirstOrDefault(u => u.Id == chatClient.Id);
-                                        Console.WriteLine($"user: {user}");
+                                        Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
+                                        user.Username = tokens[2].Trim();
 
-                                        if (user != null)
+                                        ChatMessage welcomeMessage = new WelcomeNewUserMessage()
                                         {
-                                            Console.WriteLine($"Setting the username of user Id: {chatClient.Id} to:\n{tokens[2].Trim()}");
-                                            user.Username = tokens[2].Trim();
-
-                                            ChatMessage welcomeMessage = new WelcomeNewUserMessage()
+                                            Id = chatClient.Id,
+                                            Message = $"Username successfully set!",
+                                            SendDateTime = DateTime.Now,
+                                            AuthorUsername = "Server",
+                                            MessageType = MessageType.InfoToUser,
+                                            WelcomeData = new WelcomeData()
                                             {
-                                                Id = chatClient.Id,
-                                                Message = $"Username successfully set!",
-                                                SendDateTime = DateTime.Now,
-                                                AuthorUsername = "Server",
-                                                MessageType = MessageType.InfoToUser,
-                                                WelcomeData = new WelcomeData()
-                                                {
-                                                    UserId = id,
-                                                    Username = user.Username
-                                                }
-                                            };
-                                            await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { chatClient });
-                                        }
-
+                                                UserId = id,
+                                                Username = user.Username
+                                            }
+                                        };
+                                        await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { chatClient });
                                     }
+
                                 }
                             }
-                            break;
-                        default:
-                            ChatMessage unknownCommandMessage = new ChatMessage()
-                            {
-                                Id = chatClient.Id,
-                                Message = $"Unknown command!",
-                                SendDateTime = DateTime.Now,
-                                AuthorUsername = "Server",
-                                MessageType = MessageType.InfoToUser,
-                            };
-                            await SendMessageToSockets(unknownCommandMessage, new List<ChatClient>() { chatClient });
+                        }
+                        break;
+                    default:
+                        ChatMessage unknownCommandMessage = new ChatMessage()
+                        {
+                            Id = chatClient.Id,
+                            Message = $"Unknown command!",
+                            SendDateTime = DateTime.Now,
+                            AuthorUsername = "Server",
+                            MessageType = MessageType.InfoToUser,
+                        };
+                        await SendMessageToSockets(unknownCommandMessage, new List<ChatClient>() { chatClient });
 
-                            return null;
-                    }
+                        return null;
                 }
 
 
-                if (!string.IsNullOrWhiteSpace(message))
+
+                if (!string.IsNullOrWhiteSpace(chatMessage.Message))
                 {
-                    chatMessage = new ChatMessage()
+                    var newChatMessage = new ChatMessage()
                     {
                         Id = Guid.NewGuid(),
-                        Message = message,
+                        Message = chatMessage.Message,
                         SendDateTime = DateTime.Now,
                         AuthorUsername = username,
                         MessageType = MessageType.Message
                     };
 
-                    return chatMessage;
+                    return newChatMessage;
                 }
             }
 
