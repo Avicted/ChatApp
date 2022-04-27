@@ -1,10 +1,19 @@
 using System.Net.WebSockets;
 using System.Text;
+using ChatAppServer.Models;
+using ChatAppServer.Exceptions;
 using Newtonsoft.Json;
+using ChatAppServer.Interfaces;
 
-public class WebSocketService
+namespace ChatAppServer.Services;
+public class WebSocketService : IWebSocketService
 {
-    public List<ChatClient> websocketConnections = new List<ChatClient>();
+    private List<ChatClient> websocketConnections = new List<ChatClient>();
+
+    public List<ChatClient> GetWebSocketConnections()
+    {
+        return websocketConnections;
+    }
     public List<ChatRoom> chatRooms = new List<ChatRoom>() {
         new ChatRoom() {
             Id = new Guid(),
@@ -153,6 +162,9 @@ public class WebSocketService
                     case MessageType.ServerInfo:
                         Console.WriteLine("MessageType.ServerInfo");
                         break;
+                    case MessageType.Voice:
+                        Console.WriteLine("MessageType.Voice");
+                        break;
                     case MessageType.Command:
                         Console.WriteLine("MessageType.Command");
 
@@ -269,7 +281,7 @@ public class WebSocketService
         }
     }
 
-    private async Task SendMessageToSockets(ChatMessage chatMessage, List<ChatClient>? receivers)
+    public async Task SendMessageToSockets(ChatMessage chatMessage, List<ChatClient>? receivers)
     {
 
         IEnumerable<ChatClient> toSentTo;
@@ -316,4 +328,5 @@ public class WebSocketService
         });
         await Task.WhenAll(tasks);
     }
+
 }
