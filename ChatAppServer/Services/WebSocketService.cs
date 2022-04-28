@@ -9,6 +9,17 @@ namespace ChatAppServer.Services;
 public class WebSocketService : IWebSocketService
 {
     private List<ChatClient> websocketConnections = new List<ChatClient>();
+    public List<Topic> topics = new List<Topic>() {
+        new Topic() {
+            Name = "general",
+        },
+        new Topic() {
+            Name = "inner-höl",
+        },
+        new Topic() {
+            Name = "dator",
+        },
+    };
 
     public List<ChatClient> GetWebSocketConnections()
     {
@@ -39,6 +50,17 @@ public class WebSocketService : IWebSocketService
             Id = id,
             WebSocket = webSocket,
             Username = "anonymous",
+            TopicsSubscribedTo = new List<Topic>() {
+                new Topic() {
+                    Name = "general",
+                },
+                new Topic() {
+                    Name = "inner-höl",
+                },
+                new Topic() {
+                    Name = "dator",
+                }
+            }
         };
 
         lock (websocketConnections)
@@ -57,7 +79,8 @@ public class WebSocketService : IWebSocketService
             Message = chatRooms[0].Messages[0].Message,
             SendDateTime = DateTime.Now,
             AuthorUsername = "Server",
-            MessageType = MessageType.ServerInfo
+            MessageType = MessageType.ServerInfo,
+            Topic = new Topic() { Name = "general" },
 
         };
 
@@ -69,7 +92,8 @@ public class WebSocketService : IWebSocketService
             Message = $"User with id {id} has joined the server",
             SendDateTime = DateTime.Now,
             AuthorUsername = "Server",
-            MessageType = MessageType.ServerInfo
+            MessageType = MessageType.ServerInfo,
+            Topic = new Topic() { Name = "general" },
 
         };
 
@@ -87,7 +111,8 @@ public class WebSocketService : IWebSocketService
             {
                 UserId = id,
                 Username = "anonymous"
-            }
+            },
+            Topic = new Topic() { Name = "general" },
         };
         await SendMessageToSockets(setYourUsernameMessage, new List<ChatClient>() { newClient });
 
@@ -196,6 +221,7 @@ public class WebSocketService : IWebSocketService
                                             SendDateTime = DateTime.Now,
                                             AuthorUsername = "Server",
                                             MessageType = MessageType.InfoToUser,
+                                            Topic = new Topic() { Name = "general" },
                                         };
 
                                         await SendMessageToSockets(usernameTakenMessage, new List<ChatClient>() { chatClient });
@@ -219,7 +245,8 @@ public class WebSocketService : IWebSocketService
                                             {
                                                 UserId = id,
                                                 Username = user.Username
-                                            }
+                                            },
+                                            Topic = new Topic() { Name = "general" },
                                         };
                                         await SendMessageToSockets(welcomeMessage, new List<ChatClient>() { chatClient });
                                     }
@@ -236,6 +263,7 @@ public class WebSocketService : IWebSocketService
                             SendDateTime = DateTime.Now,
                             AuthorUsername = "Server",
                             MessageType = MessageType.InfoToUser,
+                            Topic = new Topic() { Name = "general" },
                         };
                         await SendMessageToSockets(unknownCommandMessage, new List<ChatClient>() { chatClient });
 
@@ -252,7 +280,8 @@ public class WebSocketService : IWebSocketService
                         Message = chatMessage.Message,
                         SendDateTime = DateTime.Now,
                         AuthorUsername = username,
-                        MessageType = MessageType.Message
+                        MessageType = MessageType.Message,
+                        Topic = chatMessage.Topic,
                     };
 
                     return newChatMessage;

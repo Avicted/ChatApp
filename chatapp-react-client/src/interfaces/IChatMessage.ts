@@ -7,24 +7,16 @@ export enum MessageType {
 
 export interface IChatMessage {
     Id: string;
+    Topic: string;
     AuthorId: string;
     AuthorUsername: string;
     MessageType: MessageType;
     Message: string;
     SendDateTime: string;
+    WelcomeData?: IWelcomeData;
 }
 
 export interface IWelcomeData {
     UserId: string;
     Username: string;
-}
-
-export interface IWelcomeNewUserMessage {
-    Id: string;
-    AuthorId: string;
-    AuthorUsername: string;
-    MessageType: MessageType;
-    Message: string;
-    SendDateTime: string;
-    WelcomeData: IWelcomeData;
 }
