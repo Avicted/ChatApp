@@ -4,6 +4,18 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "MyPolicy",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000",
+                                "http://127.0.0.1:3000")
+                    .AllowAnyMethod();
+        });
+});
+
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -70,9 +82,20 @@ app.MapGet("/api/chatrooms", () =>
     }
 });
 
+app.MapGet("/api/topics", () =>
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var websocketService = scope.ServiceProvider.GetRequiredService<WebSocketService>();
+        return websocketService.topics;
+    }
+});
+
 
 app.UseRouting();
 
 app.UseWebSockets();
+
+app.UseCors("MyPolicy");
 
 app.Run();
