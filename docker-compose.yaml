@@ -10,7 +10,6 @@ services:
         container_name: "chat_app_server"
         build:
             context: .
-            dockerfile: dockerfile
         restart:
             unless-stopped
         ports:
