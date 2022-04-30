@@ -170,6 +170,8 @@ public class WebSocketService : IWebSocketService
                     // throw new ApiCouldNotReadJsonException(e.Message, e.InnerException);
                 }
 
+                
+
                 string? username = chatClient.Username == null ? "anonymous" : chatClient.Username;
 
                 if (chatMessage == null)

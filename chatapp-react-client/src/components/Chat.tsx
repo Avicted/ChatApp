@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { MessageType, IChatMessage } from "../interfaces/IChatMessage";
 import { formatDistance } from "date-fns";
+import { ITopic } from "../interfaces/ITopic";
 
 import StatusBox from "../components/StatusBox";
 
@@ -14,6 +15,7 @@ const Chat = (): JSX.Element => {
     const [userInput, setUserInput] = useState<string>("");
     const [username, setUsername] = useState<string>("anonymous");
     const [ourUserId, setOurUserId] = useState<string>("");
+    const [topic, setTopic] = useState<ITopic>({ name: "general" });
 
     const handleClickSendMessage = useCallback(
         () =>
@@ -25,7 +27,7 @@ const Chat = (): JSX.Element => {
                         ? MessageType.Command
                         : MessageType.Message,
                     Message: userInput,
-                    // Topic: "general",
+                    Topic: topic,
                 })
             ),
         [userInput, username, ourUserId]
