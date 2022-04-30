@@ -7,7 +7,7 @@ import { ITopic } from "../interfaces/ITopic";
 import StatusBox from "../components/StatusBox";
 
 const Chat = (): JSX.Element => {
-    const socketUrl = "ws://127.0.0.1:8000/api/ws";
+    const socketUrl = `ws://${process.env.REACT_APP_API_BASE_URL}/api/ws`;
 
     const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
