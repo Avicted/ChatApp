@@ -1,0 +1,18 @@
+version: '3.9'
+
+networks:
+  default:
+    external:
+      name: external
+
+services:
+    chat_app_server:
+        container_name: "chat_app_server"
+        build:
+            context: .
+            dockerfile: dockerfile
+        restart:
+            unless-stopped
+        ports:
+            - 9000:8000
+    
