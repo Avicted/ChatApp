@@ -11,7 +11,9 @@ export const OnlineUsersList: React.FunctionComponent<
 
     const fetchUsers = (): void => {
         // Fetch the online users at component mount
-        fetch("http://127.0.0.1:8000/api/websocketConnections")
+        fetch(
+            `http://${process.env.REACT_APP_API_BASE_URL}/api/websocketConnections`
+        )
             .then(async (res: Response) => {
                 const users: IChatClient[] = await res.json();
                 setUsers(users);
