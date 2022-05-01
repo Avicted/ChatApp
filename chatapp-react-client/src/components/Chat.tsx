@@ -84,6 +84,14 @@ const Chat = (): JSX.Element => {
         }
     }, [lastMessage, setMessageHistory]);
 
+    // Straight from the toppa my tou
+    const keyPress = (e: any) =>{
+        if(e.keyCode == 13){
+            handleClickSendMessage();
+            setUserInput("");
+        }
+    }
+
     return (
         <div className="Chat">
             <div>
@@ -112,9 +120,14 @@ const Chat = (): JSX.Element => {
                 </ul>
             </div>
             <div id="input-box">
-                <input type="text" onChange={(e) => handleUserInput(e)} />
+                <input 
+                type="text" 
+                onChange={(e: any) => handleUserInput(e)} 
+                onKeyDown={(e:any) => keyPress(e)}
+                value={userInput}
+                />
                 <button
-                    onClick={(e) => handleClickSendMessage()}
+                    onClick={(e:any) => handleClickSendMessage()}
                     disabled={readyState !== ReadyState.OPEN}
                 >
                     <b>Send</b>
