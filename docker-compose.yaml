@@ -9,7 +9,8 @@ services:
     chat_app_server:
         container_name: "chat_app_server"
         build:
-            context: ./ChatAppServer
+            context: "ChatAppServer"
+            dockerfile: Dockerfile
         restart:
             unless-stopped
         ports:
@@ -18,7 +19,8 @@ services:
     chat_app_react_client:
         container_name: "chatapp_react_client"
         build:
-            context: ./chatapp-react-client
+            context: "./chatapp-react-client"
+            dockerfile: Dockerfile
         restart:
             unless-stopped
         ports:
