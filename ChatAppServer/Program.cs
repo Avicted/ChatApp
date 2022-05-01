@@ -37,11 +37,9 @@ app.Urls.Add("http://0.0.0.0:8000");
 
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 
 app.MapGet("/api/ws", async (HttpContext context) =>
