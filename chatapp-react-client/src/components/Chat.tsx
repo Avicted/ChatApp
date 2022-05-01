@@ -7,7 +7,7 @@ import { ITopic } from "../interfaces/ITopic";
 import StatusBox from "../components/StatusBox";
 
 const Chat = (): JSX.Element => {
-    const socketUrl = `ws://${process.env.REACT_APP_API_BASE_URL}/api/ws`;
+    const socketUrl = `${process.env.REACT_APP_WEBSOCKET_URL}`;
 
     const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
@@ -85,12 +85,12 @@ const Chat = (): JSX.Element => {
     }, [lastMessage, setMessageHistory]);
 
     // Straight from the toppa my tou
-    const keyPress = (e: any) =>{
-        if(e.keyCode == 13){
+    const keyPress = (e: any) => {
+        if (e.keyCode == 13) {
             handleClickSendMessage();
             setUserInput("");
         }
-    }
+    };
 
     return (
         <div className="Chat">
@@ -120,14 +120,14 @@ const Chat = (): JSX.Element => {
                 </ul>
             </div>
             <div id="input-box">
-                <input 
-                type="text" 
-                onChange={(e: any) => handleUserInput(e)} 
-                onKeyDown={(e:any) => keyPress(e)}
-                value={userInput}
+                <input
+                    type="text"
+                    onChange={(e: any) => handleUserInput(e)}
+                    onKeyDown={(e: any) => keyPress(e)}
+                    value={userInput}
                 />
                 <button
-                    onClick={(e:any) => handleClickSendMessage()}
+                    onClick={(e: any) => handleClickSendMessage()}
                     disabled={readyState !== ReadyState.OPEN}
                 >
                     <b>Send</b>
