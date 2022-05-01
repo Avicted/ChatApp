@@ -16,9 +16,9 @@ services:
             - 9000:8000
 
     chat_app_react_client:
-        container_name: "chat_app_react_client"
+        container_name: "chatapp_react_client"
         build:
-            context: chat-app-react-client
+            context: ./chatapp-react-client
         restart:
             unless-stopped
         ports:

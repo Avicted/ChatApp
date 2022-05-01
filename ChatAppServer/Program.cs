@@ -33,7 +33,7 @@ builder.Logging.AddSerilog(logger);
 builder.Services.AddSingleton<WebSocketService>();
 
 var app = builder.Build();
-app.Urls.Add("http://localhost:8000");
+app.Urls.Add("http://0.0.0.0:8000");
 
 
 // Configure the HTTP request pipeline.
